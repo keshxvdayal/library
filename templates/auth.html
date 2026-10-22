@@ -1,0 +1,9 @@
+{% extends "base.html" %}{% block c %}
+<div style="max-width:380px;margin:40px auto"><h1>{{ 'Create your account' if mode=='signup' else 'Welcome back' }}</h1>
+<form method="post" class="grid">{{csrf_field()}}
+{% if mode=='signup' %}<input class="w" name="name" placeholder="Full name" required>{% endif %}
+<input class="w" type="email" name="email" placeholder="Email" required>
+<input class="w" type="password" name="password" placeholder="Password{{ ' (8+ characters)' if mode=='signup' }}" required>
+<button class="w">{{ 'Sign up' if mode=='signup' else 'Log in' }}</button></form>
+<p class="mu">{% if mode=='signup' %}Have an account? <a href="{{url_for('login')}}">Log in</a>{% else %}New here? <a href="{{url_for('signup')}}">Sign up</a>{% endif %}</p></div>
+{% endblock %}

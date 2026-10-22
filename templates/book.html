@@ -1,0 +1,6 @@
+{% extends "base.html" %}{% block c %}
+<div style="text-align:center"><h1>{{b.title}}</h1><p class="mu">Print this and stick it inside the cover. It identifies this exact copy and confirms handoff.</p>
+<div id="qr" style="display:inline-block;background:#fff;padding:16px;border-radius:8px"></div><p><b>{{b.code}}</b></p>
+<button onclick="print()">Print</button> <a class="btn g" href="{{url_for('dashboard')}}" style="background:none;color:var(--ac);border:1px solid var(--ac)">Back</a></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>new QRCode(document.getElementById('qr'),{text:{{b.code|tojson}},width:220,height:220})</script>{% endblock %}

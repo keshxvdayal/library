@@ -1,0 +1,36 @@
+{% extends "base.html" %}{% block c %}
+<div class="stats"><div><b>{{books|length}}</b>books on my shelf</div><div><b>{{incoming|length}}</b>open requests &amp; loans</div><div><b>{{user.balance|usd}}</b>wallet</div></div>
+<h2>Add a book</h2>
+<form method="post" action="{{url_for('add_book')}}" class="grid" id="addf">{{csrf_field()}}
+<div class="w"><div class="row"><input id="isbn" name="isbn" placeholder="ISBN (scan or type)" inputmode="numeric"><button type="button" class="g" id="sc">Scan</button></div></div>
+<input id="title" name="title" placeholder="Title" required><input id="author" name="author" placeholder="Author">
+<button class="w">Add to my shelf &amp; get QR</button></form>
+<h2>My shelf</h2>
+{% for b in books %}<div class="card"><div><b>{{b.title}}</b><div class="mu">{{b.author}}</div></div>
+<div class="row"><span class="tag">{{ {'requested':'Requested','approved':'Reserved','active':'On loan'}.get(b.ls,'Available') }}</span>
+<a href="{{url_for('book_qr',bid=b.id)}}">QR</a>
+{% if not b.ls %}<form class="in" method="post" action="{{url_for('delete_book',bid=b.id)}}" onsubmit="return confirm('Remove this book?')">{{csrf_field()}}<button class="g">Remove</button></form>{% endif %}</div></div>
+{% else %}<p class="mu">Nothing yet. Add your first book above.</p>{% endfor %}
+<h2>Requests for my books</h2>
+{% for l in incoming %}<div class="card"><div><b>{{l.title}}</b><div class="mu">{{l.person}} · {{l.status}}{% if l.due %} · due {{l.due}}{% endif %}</div></div>
+<div class="row">
+{% if l.status=='requested' %}<form class="in" method="post" action="{{url_for('loan_act',lid=l.id,act='accept')}}">{{csrf_field()}}<button>Accept</button></form>{% endif %}
+{% if l.status in ('requested','approved') %}<form class="in" method="post" action="{{url_for('loan_act',lid=l.id,act='decline')}}">{{csrf_field()}}<button class="g">Decline</button></form>{% endif %}
+{% if l.status=='approved' %}<span class="mu">Let them scan the book’s QR</span>{% endif %}
+{% if l.status=='active' %}<form class="in" method="post" action="{{url_for('loan_act',lid=l.id,act='return')}}">{{csrf_field()}}<button>Mark returned</button></form>{% endif %}
+</div></div>{% else %}<p class="mu">No open requests.</p>{% endfor %}
+<h2>Books I’m borrowing</h2>
+{% for l in outgoing %}<div class="card"><div><b>{{l.title}}</b><div class="mu">from {{l.person}} · {{l.status}}{% if l.due and l.status=='active' %} · due {{l.due}}{% endif %}</div></div>
+<div>
+{% if l.status=='approved' %}<form method="post" action="{{url_for('loan_act',lid=l.id,act='handoff')}}" class="row">{{csrf_field()}}
+<input name="code" placeholder="Code on the book’s QR" required style="width:170px"><button type="button" class="g" onclick="scanInto(this,this.previousElementSibling,['qr_code'],()=>this.form.submit())">Scan</button><button>Confirm pickup</button></form>{% endif %}
+{% if l.status in ('requested','approved') %}<form class="in" method="post" action="{{url_for('loan_act',lid=l.id,act='cancel')}}">{{csrf_field()}}<button class="g">Cancel &amp; refund</button></form>{% endif %}
+</div></div>{% else %}<p class="mu">You haven’t borrowed anything yet. <a href="{{url_for('browse')}}">Browse books</a></p>{% endfor %}
+<script>
+const isbn=document.getElementById('isbn');
+async function look(){const v=isbn.value.trim();if(v.length<10)return;
+ try{const r=await (await fetch('/api/isbn/'+encodeURIComponent(v))).json();
+ if(r.found){if(!title.value)title.value=r.title;if(!author.value)author.value=r.author}}catch(e){}}
+isbn.addEventListener('change',look);
+document.getElementById('sc').onclick=function(){scanInto(this,isbn,['ean_13','ean_8','upc_a'],look)};
+</script>{% endblock %}

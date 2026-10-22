@@ -1,0 +1,8 @@
+{% extends "base.html" %}{% block c %}
+<h1>Wallet: {{user.balance|usd}}</h1>
+{% if stripe or dev %}<form method="post" action="{{url_for('topup')}}" class="row">{{csrf_field()}}
+{% for a in (5,10,20) %}<button name="amount" value="{{a}}">Add ${{a}}</button>{% endfor %}</form>
+{% if dev and not stripe %}<p class="mu">Dev mode: credits are free. Set STRIPE_SECRET_KEY for real payments.</p>{% endif %}
+{% else %}<p class="mu">Top-ups are disabled until STRIPE_SECRET_KEY is set on the server.</p>{% endif %}
+<h2>History</h2>{% for t in txs %}<div class="card"><span>{{t.label}}<br><span class="mu">{{t.created}}</span></span><b>{{ '+' if t.cents>0 else '−' }}{{ (t.cents|abs)|usd }}</b></div>
+{% else %}<p class="mu">No transactions yet.</p>{% endfor %}{% endblock %}

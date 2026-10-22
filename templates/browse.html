@@ -1,0 +1,5 @@
+{% extends "base.html" %}{% block c %}
+<h1>Browse books</h1><form class="row"><input name="q" placeholder="Search title or author" value="{{request.args.get('q','')}}"><button>Search</button></form>
+{% for b in books %}<div class="card"><div><b>{{b.title}}</b><div class="mu">{{b.author}} · shared by {{b.owner}}</div></div>
+{% if b.busy %}<span class="tag">Unavailable</span>{% else %}<form class="in" method="post" action="{{url_for('borrow',bid=b.id)}}">{{csrf_field()}}<button>Borrow · $1</button></form>{% endif %}</div>
+{% else %}<p class="mu">No books from other members yet. Invite friends to add theirs.</p>{% endfor %}{% endblock %}
